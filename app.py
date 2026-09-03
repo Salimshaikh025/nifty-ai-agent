@@ -15,8 +15,7 @@ from growwapi import GrowwAPI, GrowwFeed
 
 IST = ZoneInfo("Asia/Kolkata")
 
-API_KEY = os.getenv("GROWW_API_KEY")
-API_SECRET = os.getenv("GROWW_API_SECRET")
+ACCESS_TOKEN = os.getenv("GROWW_ACCESS_TOKEN")
 
 app = Flask(__name__)
 
@@ -51,8 +50,89 @@ lock = threading.Lock()
 # HELPERS
 # ============================================================
 
-def now_ist():
-    return datetime.now(IST)
+def start_groww():
+    if not ACCESS_TOKEN:
+        with lock:
+            state["status"] = "ERROR"
+            state["message"] = "Groww access token not configured"
+        print("ERROR: GROWW_ACCESS_TOKEN is missing.")
+        return
+
+    try:
+        with lock:
+            state["status"] = "AUTHENTICATING"
+            state["message"] = "Connecting to Groww..."
+
+        print("Connecting to Groww using Access Token...")
+
+        groww = GrowwAPI(ACCESS_TOKEN)
+
+        print("Groww API connected.")
+        load_history(groww)
+
+        feed = GrowwFeed(groww)
+
+        instruments = [
+            {
+                "exchange": "NSE",
+                "segment": "CASH",
+                "exchange_token": "NIFTY"
+            }
+        ]
+
+        def on_data_received(meta):
+            try:
+                data = feed.get_index_value()
+
+                nifty = (
+                    data
+                    .get("NSE", {})
+                    .get("CASH", {})
+                    .get("NIFTY", {})
+                )
+
+                price = nifty.get("value")
+                timestamp = nifty.get("tsInMillis")
+
+                if price is None:
+                    return
+
+                if timestamp is None:
+                    timestamp = int(time.time() * 1000)
+
+                process_price(
+                    float(price),
+                    float(timestamp)
+                )
+
+                with lock:
+                    state["status"] = "LIVE"
+                    state["message"] = "Live NIFTY feed connected"
+
+            except Exception as e:
+                print("Feed callback error:", repr(e))
+
+        print("Subscribing to NIFTY live feed...")
+
+        feed.subscribe_index_value(
+            instruments,
+            on_data_received=on_data_received
+        )
+
+        with lock:
+            state["status"] = "LIVE"
+            state["message"] = "NIFTY live feed connected"
+
+        print("NIFTY live feed connected.")
+
+        feed.consume()
+
+    except Exception as e:
+        print("Groww connection error:", repr(e))
+
+        with lock:
+            state["status"] = "ERROR"
+            state["message"] = f"Groww error: {str(e)}"
 
 
 def candle_start(dt):
