@@ -69,7 +69,7 @@ def start_groww():
         groww = GrowwAPI(ACCESS_TOKEN)
 
         print("Groww API connected.")
-        load_history(groww)
+
 
         feed = GrowwFeed(groww)
 
