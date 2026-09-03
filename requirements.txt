@@ -1,0 +1,4 @@
+Flask
+growwapi
+pyotp
+gunicorn
