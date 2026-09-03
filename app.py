@@ -16,7 +16,8 @@ from growwapi import GrowwAPI, GrowwFeed
 IST = ZoneInfo("Asia/Kolkata")
 
 ACCESS_TOKEN = os.getenv("GROWW_ACCESS_TOKEN")
-
+def now_ist():
+    return datetime.now(IST)
 app = Flask(__name__)
 
 # Live NIFTY state
