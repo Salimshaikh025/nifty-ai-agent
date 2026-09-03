@@ -94,7 +94,7 @@ def start_groww():
 
                 price = nifty.get("value")
                 timestamp = nifty.get("tsInMillis")
-
+print("NIFTY LIVE DATA:", nifty)
                 if price is None:
                     return
 
