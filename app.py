@@ -2679,215 +2679,111 @@ daily trade and amount limits.
 <script>
 
 async function update() {
-
     try {
+        const r = await fetch("/api/status?t=" + Date.now(), {
+            cache: "no-store"
+        });
 
-        const r =
-            await fetch("/api/status");
+        if (!r.ok) {
+            throw new Error("HTTP " + r.status);
+        }
 
-        const d =
-            await r.json();
+        const d = await r.json();
 
+        document.getElementById("price").innerText =
+            d.nifty !== null && d.nifty !== undefined
+                ? Number(d.nifty).toFixed(2)
+                : "--";
 
-        document.getElementById(
-            "price"
-        ).innerText =
-            d.nifty ?? "--";
-
-
-        document.getElementById(
-            "signal"
-        ).innerText =
+        document.getElementById("signal").innerText =
             d.signal || "WAIT";
 
+        document.getElementById("confidence").innerText =
+            Number(d.confidence || 0) + "%";
 
-        document.getElementById(
-            "confidence"
-        ).innerText =
-            (d.confidence || 0)
-            + "%";
+        document.getElementById("auto").innerText =
+            d.auto_pilot ? "ON" : "OFF";
 
+        document.getElementById("trades").innerText =
+            d.trades_today || 0;
 
-        document.getElementById(
-            "auto"
-        ).innerText =
-            d.auto_pilot
-            ? "ON"
-            : "OFF";
+        document.getElementById("maxtrades").innerText =
+            d.max_trades_today || 1;
 
+        document.getElementById("amount").innerText =
+            Number(d.amount_today || 0).toFixed(0);
 
-        document.getElementById(
-            "trades"
-        ).innerText =
-            d.trades_today;
+        document.getElementById("maxamount").innerText =
+            Number(d.max_amount_today || 0).toFixed(0);
 
+        document.getElementById("position").innerText =
+            d.position || "NONE";
 
-        document.getElementById(
-            "maxtrades"
-        ).innerText =
-            d.max_trades_today;
+        document.getElementById("symbol").innerText =
+            d.trading_symbol || "--";
 
-
-        document.getElementById(
-            "amount"
-        ).innerText =
-            Number(
-                d.amount_today || 0
-            ).toFixed(0);
-
-
-        document.getElementById(
-            "maxamount"
-        ).innerText =
-            Number(
-                d.max_amount_today || 0
-            ).toFixed(0);
-
-
-        document.getElementById(
-            "position"
-        ).innerText =
-            d.position;
-
-
-        document.getElementById(
-            "symbol"
-        ).innerText =
-            d.trading_symbol
-            || "--";
-
-
-        document.getElementById(
-            "qty"
-        ).innerText =
+        document.getElementById("qty").innerText =
             d.quantity || "--";
 
+        document.getElementById("entry").innerText =
+            d.entry_price !== null && d.entry_price !== undefined
+                ? "₹" + Number(d.entry_price).toFixed(2)
+                : "--";
 
-        document.getElementById(
-            "entry"
-        ).innerText =
-            d.entry_price !== null
-            ? "₹" + d.entry_price
-            : "--";
+        document.getElementById("current").innerText =
+            d.current_price !== null && d.current_price !== undefined
+                ? "₹" + Number(d.current_price).toFixed(2)
+                : "--";
 
+        document.getElementById("sl").innerText =
+            d.stop_loss !== null && d.stop_loss !== undefined
+                ? "₹" + Number(d.stop_loss).toFixed(2)
+                : "--";
 
-        document.getElementById(
-            "current"
-        ).innerText =
-            d.current_price !== null
-            ? "₹" + d.current_price
-            : "--";
+        document.getElementById("target").innerText =
+            d.target !== null && d.target !== undefined
+                ? "₹" + Number(d.target).toFixed(2)
+                : "--";
 
+        document.getElementById("protection").innerText =
+            d.protection_status || "NONE";
 
-        document.getElementById(
-            "sl"
-        ).innerText =
-            d.stop_loss !== null
-            ? "₹" + d.stop_loss
-            : "--";
+        document.getElementById("positionPnl").innerText =
+            "₹" + Number(d.unrealised_pnl || 0).toFixed(2);
 
+        document.getElementById("realised").innerText =
+            "₹" + Number(d.realised_pnl || 0).toFixed(2);
 
-        document.getElementById(
-            "target"
-        ).innerText =
-            d.target !== null
-            ? "₹" + d.target
-            : "--";
+        document.getElementById("unrealised").innerText =
+            "₹" + Number(d.unrealised_pnl || 0).toFixed(2);
 
+        document.getElementById("daypnl").innerText =
+            "₹" + Number(d.day_pnl || 0).toFixed(2);
 
-        document.getElementById(
-            "protection"
-        ).innerText =
-            d.protection_status
-            || "NONE";
+        const c = d.candle || {};
 
-
-        document.getElementById(
-            "positionPnl"
-        ).innerText =
-            "₹"
-            + Number(
-                d.unrealised_pnl || 0
-            ).toFixed(2);
-
-
-        document.getElementById(
-            "realised"
-        ).innerText =
-            "₹"
-            + Number(
-                d.realised_pnl || 0
-            ).toFixed(2);
-
-
-        document.getElementById(
-            "unrealised"
-        ).innerText =
-            "₹"
-            + Number(
-                d.unrealised_pnl || 0
-            ).toFixed(2);
-
-
-        document.getElementById(
-            "daypnl"
-        ).innerText =
-            "₹"
-            + Number(
-                d.day_pnl || 0
-            ).toFixed(2);
-
-
-        const c =
-            d.candle || {};
-
-
-        document.getElementById(
-            "open"
-        ).innerText =
+        document.getElementById("open").innerText =
             c.open ?? "--";
 
-
-        document.getElementById(
-            "high"
-        ).innerText =
+        document.getElementById("high").innerText =
             c.high ?? "--";
 
-
-        document.getElementById(
-            "low"
-        ).innerText =
+        document.getElementById("low").innerText =
             c.low ?? "--";
 
-
-        document.getElementById(
-            "close"
-        ).innerText =
+        document.getElementById("close").innerText =
             c.close ?? "--";
 
+        document.getElementById("status").innerText =
+            (d.status || "UNKNOWN") + " | " + (d.message || "");
 
-        document.getElementById(
-            "status"
-        ).innerText =
-            d.status
-            + " | "
-            + d.message;
-
-
-        document.getElementById(
-            "message"
-        ).innerText =
+        document.getElementById("message").innerText =
             d.trade_message || "";
 
-    }
-
-    catch(e) {
-
-        document.getElementById(
-            "status"
-        ).innerText =
-            "APP ERROR";
-
+    } catch (e) {
+        console.error("Status update error:", e);
+        document.getElementById("status").innerText =
+            "APP ERROR: " + e.message;
     }
 }
 
